@@ -5,6 +5,7 @@ import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.activity.viewModels
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
@@ -35,6 +36,7 @@ import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import com.example.assign5_3.ui.theme.Assign5_3Theme
 import kotlin.getValue
+import kotlin.text.toIntOrNull
 
 data class Location(val id: Int, val name: String, val description: String, val category: String)
 
@@ -120,22 +122,46 @@ fun MainScreen(viewModel: MyViewModel){
 }
 
 @Composable
-fun HomeScreen(viewModel: MyViewModel){
-    Column(modifier = Modifier.padding(12.dp)){
+fun HomeScreen(modifier: Modifier = Modifier){
+    Column(modifier = modifier.padding(12.dp)){
         Text("Welcome to Boston!")
         Text("Explore Boston with our app!")
     }
 }
 
 @Composable
-fun CategoriesScreen(viewModel: MyViewModel) {
-    Column(modifier = Modifier.padding(12.dp)){
+fun CategoriesScreen(viewModel: MyViewModel, onCategorySelected: (String) -> Unit, modifier: Modifier) {
+    Column(modifier = modifier.padding(12.dp)){
         Text("Select a category:")
         LazyColumn() {
             items(viewModel.categories.size) { index ->
-                Text(viewModel.categories[index])
+                Text(viewModel.categories[index], modifier.clickable { onCategorySelected(viewModel.categories[index]) })
             }
         }
+    }
+}
+
+@Composable
+fun ListScreen(category: String?, viewModel: MyViewModel, onLocationSelected: (Int) -> Unit, modifier: Modifier){
+    val locations = viewModel.locations.filter { it.category == category }
+    Column(modifier = modifier){
+        Text("Locations in $category:")
+        LazyColumn(modifier.padding(10.dp)) {
+            items(locations.size) { index ->
+                Text(locations[index].name, modifier.clickable { onLocationSelected(locations[index].id) })
+            }
+        }
+    }
+}
+
+@Composable
+fun DetailScreen(locationId: Int?, viewModel: MyViewModel, modifier: Modifier) {
+    val location = viewModel.locations.find { it.id == locationId }
+
+    Column(modifier){
+        Text(location?.name ?: "Location not found", fontSize = 24.sp)
+        Text(location?.description ?: "", fontSize = 16.sp)
+        Text("Category: ${location?.category}", fontSize = 16.sp)
     }
 }
 
